@@ -1,13 +1,21 @@
-;((w, d, $) => {
+;(function(root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define([], factory);
+  } else if (typeof exports === 'object') {
+    module.exports = factory(require('jquery'));
+  } else {
+    root.PlanCalendar = factory(root.jQuery);
+  }
+})(this ? this : window, function($) {
   class PlanCalendar {
     constructor(elem, options = {}) {
       const defaults = {
-        monthNum: 4,            // Number 默认值 4，月份显示个数
-        sellOutText: '售罄',    // String 默认值 '售罄'，余位为0时显示文字
-        isTips: false,         // Boolean 默认值 false，是否显示提示层 
-        maxNum: 20,            // Number  默认值 20，大于等于指定余位显示 maxNumText 的值
-        maxNumText: '充足',    // String  默认值 '充足'，配置大于等于指定余位显示文字
-        markDates: [],        // Array  默认值 []， 格式化好的团期数据        
+        monthNum: 4, // Number 默认值 4，月份显示个数
+        sellOutText: '售罄', // String 默认值 '售罄'，余位为0时显示文字
+        isTips: false, // Boolean 默认值 false，是否显示提示层 
+        maxNum: 20, // Number  默认值 20，大于等于指定余位显示 maxNumText 的值
+        maxNumText: '充足', // String  默认值 '充足'，配置大于等于指定余位显示文字
+        markDates: [], // Array  默认值 []， 格式化好的团期数据        
         onSelect: function (dateItem, dataIndex) { // 选择团期之后的回调，dateItem：选中日期项, dataIndex: 数据的索引值
         },
         initTips: function (dataIndex) { // 初始化tips文档内容，dataIndex: 数据的索引值
@@ -55,7 +63,7 @@
         let mm = m + index > 11 ? (m - 12 + index) : (m + index);
         that.getCalDate(yy, mm);
       });
-      this.$calDate.on('click', 'li.enabled', function() {
+      this.$calDate.on('click', 'li.enabled', function () {
         that.selectCalDate(this, that.options.onSelect);
       });
     }
@@ -81,7 +89,7 @@
      */
     getEndDate(date, days) {
       const t = new Date(date);
-      return this.formatDate(t.getFullYear(), t.getMonth(), t.getDate()+days);
+      return this.formatDate(t.getFullYear(), t.getMonth(), t.getDate() + days);
     }
     /**
      * 获取指定月下在团期数据中的价格最小值，
@@ -101,9 +109,9 @@
       const minPrice = prices.map((curVal) => {
         return curVal.price;
       }).sort()[0];
-      let priceHtml = minPrice 
-        ? `<p class="price">&yen;${minPrice}起</p>`
-        : `<p class="price">未设置</p>`
+      let priceHtml = minPrice ?
+        `<p class="price">&yen;${minPrice}起</p>` :
+        `<p class="price">未设置</p>`
       return priceHtml;
     }
     /**
@@ -127,9 +135,9 @@
       // 输出对应日期的团期数据
       this.data.forEach((curVal, i) => {
         if (this.formatDate(curVal.date) === this.formatDate(year, month, date)) {
-          let priceHtml = typeof curVal.price === 'undefined' 
-            ? ''
-            : `<p class="price">&yen;${curVal.price}起</p>`;
+          let priceHtml = typeof curVal.price === 'undefined' ?
+            '' :
+            `<p class="price">&yen;${curVal.price}起</p>`;
           let dataHtml = `${ priceHtml }<p class="number">${ toNumTxt(curVal.number) }</p>`;
 
           $item.addClass('enabled')
@@ -140,10 +148,10 @@
             $item.addClass('selected');
           }
           if (typeof curVal.number !== 'undefined' && curVal.number === 0) {
-            $item.append(`<i class="badge">${this.options.sellOutText}</i>`); 
+            $item.append(`<i class="badge">${this.options.sellOutText}</i>`);
           }
           if (this.options.isTips && this.options.initTips !== 'undefined' && !$item.hasClass('invalid')) {
-            $item.append(this.options.initTips(i));   
+            $item.append(this.options.initTips(i));
           }
         }
       });
@@ -254,7 +262,7 @@
      * @param {* function } callback 回调，参数：dateItem 已选日期项；dataIndex： 团期数据索引
      */
     selectCalDate(obj, callback) {
-  
+
       let curDate = $(obj).attr('data-date');
       let $curMonthItem = this.$calMonth.children('li.active');
       let curMonth = ($curMonthItem.attr('data-month') - 1);
@@ -280,5 +288,6 @@
       });
     }
   }
-  w.PlanCalendar = PlanCalendar;
-})(window, document, $);
+  return PlanCalendar;
+});
+

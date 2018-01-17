@@ -19,6 +19,7 @@
     "gulp-uglify": "^3.0.0"
   },
   "dependencies": {
-    "babel-polyfill": "^6.26.0"
+    "babel-polyfill": "^6.26.0",
+    "jquery": "^1.9.1"
   }
 }
