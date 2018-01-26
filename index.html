@@ -95,6 +95,24 @@ var resData = {
     adultPrice: 3299,
     childPrice: 3099,
     otherPrice: 200,
+    endNum: 21,
+    sale: true,
+    badge: '优惠'
+  }, {
+    planDate: '2018/01/29',
+    days: 2,
+    adultPrice: 3299,
+    childPrice: 3099,
+    otherPrice: 200,
+    endNum: 18,
+    sale: true,
+    badge: '优惠'
+  }, {
+    planDate: '2018/01/29',
+    days: 2,
+    adultPrice: 3299,
+    childPrice: 3099,
+    otherPrice: 200,
     endNum: 5,
     sale: true,
     badge: '优惠'
@@ -112,6 +130,13 @@ var resData = {
     childPrice: 4099,
     otherPrice: 300,
     endNum: 0
+  }, {
+    planDate: '2018/02/06',
+    days: 30,
+    adultPrice: 2222,
+    childPrice: 2222,
+    otherPrice: 2000,
+    endNum: 0
   }]
 };
 
@@ -121,7 +146,8 @@ resData.rows.forEach(function(curVal) {
      date: curVal.planDate,   // String 必填，出团日期
      number: curVal.endNum,   // Number 团期余位
      price: curVal.adultPrice,// Number 团期价格
-     days: curVal.days        // Number 团期天数
+     days: curVal.days,        // Number 团期天数
+     childPrice: curVal.childPrice
    };
    mark_dates.push(obj);
 }); 
@@ -133,11 +159,11 @@ var planCalendar = new PlanCalendar('#planCalendar', {
   isTips: true,             // Boolean 默认值 false，是否显示提示层 
   maxNum: 20,               // Number  默认值 20，大于等于指定余位显示 maxNumText 的值
   maxNumText: '充足',       // String  默认值 '充足'，配置大于等于指定余位显示文字
-  onSelect: function(dateItem, dataIndex) { // 选择团期之后的回调，dateItem：选中日期项, dataIndex: 数据的索引值
-    console.log(dateItem.attr('data-week'), resData.rows[dataIndex]);
+  onSelect: function(dateItem, data) { // 选择团期之后的回调，dateItem：选中日期项, data[Array]: 团期数据
+    console.log(dateItem.attr('data-week'), data);
   },
- initTips: function(dataIndex) { // 初始化tips文档内容，dataIndex: 数据的索引值
-    return `<div class="tips">${resData.rows[dataIndex].endNum}</div>`; // return String 文档内容
+ initTips: function(data) { // 初始化tips文档内容，data: 选中日期的团期数据，只选一个团期
+    return `<div class="tips">${data.number}</div>`; // return String 文档内容
   }
 });
 </script>

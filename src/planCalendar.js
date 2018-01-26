@@ -16,9 +16,9 @@
         maxNum: 20, // Number  默认值 20，大于等于指定余位显示 maxNumText 的值
         maxNumText: '充足', // String  默认值 '充足'，配置大于等于指定余位显示文字
         markDates: [], // Array  默认值 []， 格式化好的团期数据        
-        onSelect: function (dateItem, dataIndex) { // 选择团期之后的回调，dateItem：选中日期项, dataIndex: 数据的索引值
+        onSelect: function (dateItem, dataIndex) { // 选择团期之后的回调，dateItem：选中日期项, data[Array]: 团期数据
         },
-        initTips: function (dataIndex) { // 初始化tips文档内容，dataIndex: 数据的索引值
+        initTips: function (dataIndex) { // 初始化tips文档内容，data: 选中日期的团期数据，只选一个团期
           // return String 文档内容
         }
 
@@ -36,7 +36,15 @@
       }
 
       this.options = options;
-      this.data = this.options.markDates;
+      this.data = this.options.markDates.map((curVal) => {
+        // 格式化出团日期
+        for (let key in curVal) {
+          if (key === 'date') {
+            curVal[key] = this.formatDate(curVal.date);
+          }
+        }
+        return curVal;
+      });
       this.options.monthNum = this.options.monthNum > 11 ? 11 : this.options.monthNum; // 选项卡个数不能超过11个
       // 已选日期
       this.selectedDate = undefined;
@@ -100,8 +108,8 @@
         return '<p class="none">无团期</p>';
       }
       const prices = this.data.filter((curVal) => {
-        return (this.formatDate(curVal.date).split('-')[0] == year &&
-          parseInt(this.formatDate(curVal.date).split('-')[1]) == month)
+        return (curVal.date.split('-')[0] == year &&
+          parseInt(curVal.date.split('-')[1]) == month)
       });
       if (prices.length === 0) {
         return '<p class="none">无团期</p>';
@@ -122,6 +130,7 @@
      * @param {* number} date 当前日期
      */
     renderPlanData($item, year, month, date) {
+      let curDate = this.formatDate(year, month, date); 
       const op = this.options;
       const toNumTxt = (number) => {
         if (number < op.maxNum) {
@@ -132,26 +141,47 @@
           return '';
         }
       };
+      const repeatDates = []; // 存储被移除的重复日期
+      const uniqueData = []; // 存储被去重后的数据
+      const dates = []; // 创建一个中间数组存储日期
+      // 先按照余位数量从大到小对数组进行排序，
+      // 使数组去重将取余位最大的数据
+      this.data.sort((a, b) => {
+        return b.number - a.number;
+      })
+      .forEach((curVal) => {
+        let planDate = curVal.date;
+        if (dates.indexOf(planDate) === -1) {
+          dates.push(planDate);
+          uniqueData.push(curVal);
+        } else {
+          repeatDates.push(curVal.date);
+        }
+      });
       // 输出对应日期的团期数据
-      this.data.forEach((curVal, i) => {
-        if (this.formatDate(curVal.date) === this.formatDate(year, month, date)) {
-          let priceHtml = typeof curVal.price === 'undefined' ?
-            '' :
-            `<p class="price">&yen;${curVal.price}起</p>`;
+      uniqueData.forEach((curVal, i) => {
+        let planDate = curVal.date;
+        if (planDate === curDate) {
+          let priceHtml = typeof curVal.price === 'undefined' 
+            ? '' 
+            : `<p class="price">&yen;${curVal.price}起</p>`;
           let dataHtml = `${ priceHtml }<p class="number">${ toNumTxt(curVal.number) }</p>`;
 
           $item.addClass('enabled')
-            .attr('data-start', this.formatDate(curVal.date))
+            .attr('data-start', planDate)
             .attr('data-end', this.getEndDate(curVal.date, curVal.days))
             .append(dataHtml);
-          if (this.formatDate(curVal.date) === this.selectedDate) {
+          if (planDate === this.selectedDate) {
             $item.addClass('selected');
+          }
+          if (repeatDates.indexOf(curDate) !== -1) {
+            $item.append(`<i class="badge">多团</i>`);
           }
           if (typeof curVal.number !== 'undefined' && curVal.number === 0) {
             $item.append(`<i class="badge">${this.options.sellOutText}</i>`);
           }
           if (this.options.isTips && this.options.initTips !== 'undefined' && !$item.hasClass('invalid')) {
-            $item.append(this.options.initTips(i));
+            $item.append(this.options.initTips(curVal));
           }
         }
       });
@@ -243,7 +273,6 @@
             }
           }
         } else {
-          let data = this.data;
           let nextMonth = m === 11 ? 0 : (m + 1);
           let nextYear = m === 11 ? (y + 1) : y;
           let curDate = ++nextMonthDate; // 获取当天日期
@@ -272,20 +301,24 @@
       $(obj).addClass('selected')
         .siblings().removeClass('selected');
       this.selectedDate = curDate;
-      this.data.forEach((curVal, i) => {
-        if (this.formatDate(curVal.date) === curDate) {
+
+      const curData = this.data.filter((curVal, i) => {
+        if (curVal.date === curDate) {
+          // 判断所选日期是否为当月、上月或下月
           if (new Date(curVal.date).getMonth() === nextMonth) {
             $curMonthItem.next().click();
           } else if (new Date(curVal.date).getMonth() === prevMonth) {
             $curMonthItem.prev().click();
           }
-          // 初始化日期dom后重新获取已选日期
-          let $selectedItem = this.$calDate.children('li.selected');
-          if (typeof callback === 'function') {
-            callback($selectedItem, i);
-          }
-        }
+        }  
+        return curVal.date === curDate;
       });
+      // 初始化日期dom后重新获取已选日期
+      let $selectedItem = this.$calDate.children('li.selected');
+
+      if (typeof callback === 'function') {
+        callback($selectedItem, curData);
+      }
     }
   }
   return PlanCalendar;
