@@ -50,39 +50,40 @@
 <script src="dist/jquery.min.js"></script>
 <script src="dist/planCalendar.min.js"></script>
 <script>
+var now = new Date();
 var resData = {
   fromCity: '深圳',
   rows: [{
-    planDate: '2018/01/03',
+    planDate: now.setDate(5),
     days: 6,
-    adultPrice: 3299,
+    adultPrice: 130,
     childPrice: 3099,
     otherPrice: 200,
     endNum: 12,
     sale: true
   }, {
-    planDate: '2017/12/21',
+    planDate: now.setDate(12),
     days: 7,
-    adultPrice: 3199,
+    adultPrice: 1001,
     childPrice: 3099,
     otherPrice: 200,
     endNum: 20
   }, {
-    planDate: '2017/12/31',
+    planDate: now.setMonth(now.getMonth()-1),
     days: 5,
     adultPrice: 3599,
     childPrice: 3399,
     otherPrice: 300,
     endNum: 22
   }, {
-    planDate: '2018/01/05',
+    planDate: now.setDate(31),
     days: 6,
     adultPrice: 3599,
     childPrice: 3399,
     otherPrice: 300,
     endNum: 22
   }, {
-    planDate: '2018/01/28',
+    planDate: now.setDate(40),
     days: 4,
     adultPrice: 3099,
     childPrice: 2999,
@@ -90,16 +91,16 @@ var resData = {
     endNum: 18,
     sale: true
   }, {
-    planDate: '2018/01/29',
+    planDate: now.setDate(29),
     days: 2,
-    adultPrice: 3299,
+    adultPrice: 90,
     childPrice: 3099,
     otherPrice: 200,
     endNum: 21,
     sale: true,
     badge: '优惠'
   }, {
-    planDate: '2018/01/29',
+    planDate: now.setDate(88),
     days: 2,
     adultPrice: 3299,
     childPrice: 3099,
@@ -108,7 +109,7 @@ var resData = {
     sale: true,
     badge: '优惠'
   }, {
-    planDate: '2018/01/29',
+    planDate: now.setDate(64),
     days: 2,
     adultPrice: 3299,
     childPrice: 3099,
@@ -117,21 +118,21 @@ var resData = {
     sale: true,
     badge: '优惠'
   }, {
-    planDate: '2018/02/01',
+    planDate: now.setDate(42),
     days: 3,
     adultPrice: 4299,
     childPrice: 4099,
     otherPrice: 300,
     endNum: 9
   }, {
-    planDate: '2018/02/06',
+    planDate: now.setDate(102),
     days: 3,
     adultPrice: 4299,
     childPrice: 4099,
     otherPrice: 300,
     endNum: 0
   }, {
-    planDate: '2018/02/06',
+    planDate: now.setDate(38),
     days: 30,
     adultPrice: 2222,
     childPrice: 2222,

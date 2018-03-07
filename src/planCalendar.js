@@ -116,7 +116,10 @@
       }
       const minPrice = prices.map((curVal) => {
         return curVal.price;
-      }).sort()[0];
+      }).sort((a, b) => {
+        return a - b;
+      })[0];
+      
       let priceHtml = minPrice ?
         `<p class="price">&yen;${minPrice}起</p>` :
         `<p class="price">未设置</p>`
