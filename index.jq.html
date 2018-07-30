@@ -25,8 +25,6 @@
     }
 
     .m-calendar {
-      position: relative;
-      z-index: 999;
       width: 490px;
       border: 1px solid #ddd;
       margin: 0 auto;
@@ -34,41 +32,15 @@
     }
 
     .m-calendar .calendar-month {
-      position: relative;
       height: 45px;
-      padding: 0 40px;
       background-color: #fff;
       font-size: 0;
       text-align: center;
     }
 
-    .m-calendar .calendar-btn-prev,
-    .m-calendar .calendar-btn-next {
-      position: absolute;
-      top: 0;
-      z-index: 10;
-      width: 40px;
-      height: 45px;
-      line-height: 45px;
-      text-align: center;
-      font-size: 20px;
-      color: #999;
-      cursor: pointer;
-      font-family: 'Simsun';
-    }
-
-    .m-calendar .calendar-btn-prev {
-      left: 0;
-    }
-
-    .m-calendar .calendar-btn-next {
-
-      right: 0;
-    }
-
     .m-calendar .calendar-month li {
       display: inline-block;
-      width: 80px;
+      width: 90px;
       height: 40px;
       padding-top: 3px;
       padding-bottom: 2px;
@@ -129,12 +101,14 @@
       outline: 1px solid #ddd;
       background-color: #fff;
       color: #333;
-      text-align: left;
-      font-size: 14px;
-      color: #666;
+      text-align: center;
       -webkit-box-sizing: border-box;
       -moz-box-sizing: border-box;
       box-sizing: border-box;
+    }
+
+    .m-calendar .calendar-date li.enabled:hover .tips {
+      display: block;
     }
 
     .m-calendar .calendar-date li.invalid {
@@ -155,13 +129,6 @@
 
     .m-calendar .calendar-date li.selected>* {
       color: #fff !important;
-    }
-
-    .m-calendar .calendar-date li.disabled {
-      background-color: #f8f8f8;
-      cursor: not-allowed;
-      color: #999;
-      opacity: 0.5;
     }
 
     .m-calendar .calendar-date li.today {}
@@ -215,36 +182,76 @@
       font-style: normal;
       overflow: hidden;
     }
+
+    .m-calendar .calendar-date li .tips {
+      display: none;
+      position: absolute;
+      left: -1px;
+      top: 59px;
+      z-index: 1;
+      width: 360px;
+      height: 100px;
+      padding: 5px 10px 10px 10px;
+      border: 1px solid #FFDCAF;
+      background-color: #fff;
+      text-align: left;
+    }
+
+    .m-calendar .calendar-date li .tips::before {
+      content: "";
+      position: absolute;
+      top: -12px;
+      left: 29px;
+      width: 0;
+      height: 0;
+      border-width: 6px;
+      border-style: dashed dashed solid dashed;
+      border-color: transparent transparent #FFDCAF transparent;
+    }
+
+    .m-calendar .calendar-date li .tips::after {
+      content: "";
+      position: absolute;
+      top: -10px;
+      left: 30px;
+      width: 0;
+      height: 0;
+      border-width: 5px;
+      border-style: dashed dashed solid dashed;
+      border-color: transparent transparent #fff transparent;
+    }
+
+    .m-calendar .calendar-date li .tips .hd {
+      height: 32px;
+      line-height: 32px;
+      border-bottom: 1px dotted #FFDCAF;
+      color: #444;
+    }
+
+    .m-calendar .calendar-date li .tips .hd span {
+      float: left;
+      width: 120px;
+      font-size: 12px;
+    }
+
+    .m-calendar .calendar-date li .tips .hd span em {
+      font-style: normal;
+      color: #f60;
+    }
   </style>
 </head>
 
 <body>
   <div class="m-calendar" id="planCalendar"></div>
-  <!-- <script src="src/planCalendar.es6.js"></script> -->
-  <script src="dist/planCalendar.js"></script>
+  <script src="dist/jquery.min.js"></script>
+  <script src="dist/planCalendar.jq.min.js"></script>
+  <!-- <script src="dist/planCalendar.min.js"></script> -->
   <script>
-    console.time('执行时间');
     var now = new Date();
     var resData = {
       fromCity: '深圳',
       rows: [{
-        planDate: '2018-10-28',
-        days: 2,
-        adultPrice: 3299,
-        childPrice: 3099,
-        otherPrice: 200,
-        endNum: 18,
-        sale: true,
-        badge: '优惠'
-      }, {
-        planDate: '2018-10-25',
-        days: 30,
-        adultPrice: 2222,
-        childPrice: 2222,
-        otherPrice: 2000,
-        endNum: 0
-      }, {
-        planDate: '2018-09-30',
+        planDate: now.setDate(5),
         days: 6,
         adultPrice: 130,
         childPrice: 3099,
@@ -252,31 +259,14 @@
         endNum: 12,
         sale: true
       }, {
-        planDate: '2018-10-25',
-        days: 2,
-        adultPrice: 90,
-        childPrice: 3099,
-        otherPrice: 200,
-        endNum: 21,
-        sale: true,
-        badge: '优惠'
-      }, {
-        planDate: '2018-08-31',
-        days: 7,
-        adultPrice: 80,
-        childPrice: 3299,
-        otherPrice: 200,
-        endNum: 12,
-        sale: true
-      }, {
-        planDate: '2018-07-31',
+        planDate: now.setDate(12),
         days: 7,
         adultPrice: 1001,
         childPrice: 3099,
         otherPrice: 200,
         endNum: 20
       }, {
-        planDate: '2018-09-01',
+        planDate: now.setMonth(now.getMonth() - 1),
         days: 5,
         adultPrice: 3599,
         childPrice: 3399,
@@ -297,6 +287,24 @@
         otherPrice: 200,
         endNum: 18,
         sale: true
+      }, {
+        planDate: now.setDate(29),
+        days: 2,
+        adultPrice: 90,
+        childPrice: 3099,
+        otherPrice: 200,
+        endNum: 21,
+        sale: true,
+        badge: '优惠'
+      }, {
+        planDate: now.setDate(88),
+        days: 2,
+        adultPrice: 3299,
+        childPrice: 3099,
+        otherPrice: 200,
+        endNum: 18,
+        sale: true,
+        badge: '优惠'
       }, {
         planDate: now.setDate(64),
         days: 2,
@@ -320,22 +328,15 @@
         childPrice: 4099,
         otherPrice: 300,
         endNum: 0
+      }, {
+        planDate: now.setDate(38),
+        days: 30,
+        adultPrice: 2222,
+        childPrice: 2222,
+        otherPrice: 2000,
+        endNum: 0
       }]
     };
-
-    /* for (let i = 0; i < 10000; i++) {
-      let t = new Date().setDate(i);
-      if (t <= 1540915200000) {
-        resData.rows.push({
-          planDate: t,
-          days: 3,
-          adultPrice: 4299,
-          childPrice: 4099,
-          otherPrice: 300,
-          endNum: 0
-        });
-      }
-    } */
 
     var mark_dates = [];
     resData.rows.forEach(function (curVal) {
@@ -351,28 +352,18 @@
 
     var planCalendar = new PlanCalendar('#planCalendar', {
       markDates: mark_dates,     // Array  默认值 []， 格式化好的团期数据
-      //disableDates: ['2018-06-09'], // 禁选团期，只禁用含团的日期，Array 指定日期 | Object 时间范围，start/end，
-      disableDates: {
-        start: '2018-06-09',
-        end: '2018-07-09',
-      },
       monthNum: 5,               // Number 默认值 4，月份显示个数
       sellOutText: '暂满',       // String 默认值 '售罄'，余位为0时显示文字
-      startByData: false,        // Boolean 默认值 false，是否显示提示层 
+      isTips: true,             // Boolean 默认值 false，是否显示提示层 
       maxNum: 20,               // Number  默认值 20，大于等于指定余位显示 maxNumText 的值
       maxNumText: '充足',       // String  默认值 '充足'，配置大于等于指定余位显示文字
-      defineNumText: '',
-      onSelect: function (data) { // 选择团期之后的回调, data[Array]: 团期数据
-        console.log(data);
+      onSelect: function (dateItem, data) { // 选择团期之后的回调，dateItem：选中日期项, data[Array]: 团期数据
+        console.log(dateItem.attr('data-week'), data);
       },
-      onMouseEnter: function (data) { // 鼠标移入含团日期回调， data[Array]: 团期数据，ps：必须为当月，上月或下月将不触发
-        console.log('鼠标移入：', data);
-      },
-      onMouseLeave: function () { // 鼠标移出含团日期回调， ps：必须为当月，上月或下月将不触发
-        console.log('鼠标移出');
+      initTips: function (data) { // 初始化tips文档内容，data: 选中日期的团期数据，只选一个团期
+        return `<div class="tips">${data.number}</div>`; // return String 文档内容
       }
     });
-    console.timeEnd('执行时间');
   </script>
 </body>
 

@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "gulp default --progress --display-modules --display-reasons --colors"
+    "build_es6": "gulp build_es6 --progress --display-modules --display-reasons --colors",
+    "build_jquery": "gulp build_jquery --progress --display-modules --display-reasons --colors"
   },
   "author": "",
   "license": "ISC",
