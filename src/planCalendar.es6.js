@@ -13,10 +13,12 @@
       const defaults = {
         monthNum: 4, // Number 默认值 4，月份显示个数
         startByData: false, // Boolean 根据传入数据的最小日期指定第一个月的显示
+        showExpiredData: false, // Boolean 默认值 false，是否渲染今天以前的数据; 当showExpiredData值为true时，startByData 设置true将失效
+        minPriceText: '无团期', // String, 默认值 无团期， 当月最小价格为0 时显示文字
         sellOutText: '售罄', // String 默认值 '售罄'，余位为0时显示文字
         maxNum: 20, // Number  默认值 20，大于等于指定余位显示 maxNumText 的值
         maxNumText: '充足', // String  默认值 '充足'，配置大于等于指定余位显示文字
-        defineNumText: '', // String 默认空， 自定义余位显示内容
+        defineNumText: '', // String 默认值： '', 自定义数量显示，若设置，权重最高，maxNumText 会失效
         markDates: [], // Array  默认值 []， 格式化好的团期数据
         disableDates: [], // // 禁选团期，只禁用含团的日期，Array 指定日期 | Object 时间范围，start/end，
         onSelect: function(data) {
@@ -33,7 +35,11 @@
       this.$el = isNodeElement(el) ? el : document.querySelector(el);
       this.$options = mapAssignObj(defaults, options); // 初始化参数
       this.$data = this.optimizeData();
-      this.$startDate = this.$data[0].date; // 第一个含数据的日期
+      // 当showExpiredData值为true时，startByData 设置true将失效
+      this.$options.startByData =
+        this.$options.startByData && !this.$options.showExpiredData;
+      this.$startDate =
+        this.$data.length > 0 ? this.$data[0].date : format(new Date()); // 第一个含数据的日期
       this.$seletedDate = ''; // 已选日期
       // 标准化数据中的日期 yyyy-mm-dd
       this.initCalendar();
@@ -51,31 +57,15 @@
         prevVal.push(curVal);
         return prevVal;
       }, []);
-      const sortDates = markDates
-        .sort((min, max) => {
-          return new Date(min.date).getTime() - new Date(max.date).getTime();
-        })
-        .filter(curVal => {
-          return startTime <= new Date(curVal.date).getTime();
-        });
-      // 过滤今天以前的数据
-      const filterDates = sortDates.filter(curVal => {
-        let t = this.$options.startByData
-          ? startTime <= new Date(sortDates[0].date).getTime()
-            ? new Date(sortDates[0].date)
-            : new Date(startTime)
-          : new Date(startTime);
-        let start = t.getTime();
-        t.setMonth(t.getMonth() + this.$options.monthNum);
-        let end = t.setDate(1);
-
-        return (
-          new Date(curVal.date).getTime() >= start &&
-          new Date(curVal.date).getTime() < end
-        );
+      const sortDates = markDates.sort((min, max) => {
+        return new Date(min.date).getTime() - new Date(max.date).getTime();
       });
-
-      return filterDates;
+      return this.$options.showExpiredData
+        ? sortDates
+        : sortDates.filter(curVal => {
+            // 过滤今天以前的数据
+            return startTime <= new Date(curVal.date).getTime();
+          });
     }
     initCalendar() {
       const options = this.$options;
@@ -347,13 +337,15 @@
 
         let minPrice = this.getMinPrice(yy, mm);
         let minPriceTxt =
-          minPrice === '无团期' ? '无团期' : `&yen;${minPrice}起`;
+          minPrice === this.$options.minPriceText
+            ? minPrice
+            : `&yen;${minPrice}起`;
 
         html += `<li data-year="${yy}" data-month="${mm + 1}" class="item 
           ${i === index ? 'active' : ''}">
           <p class="month">${yy}年${mm + 1}月</p>
           <p class="${
-            minPrice === '无团期' ? 'none' : 'price'
+            minPrice === this.$options.minPriceText ? 'none' : 'price'
           }">${minPriceTxt}</p>
         </li>`;
       }
@@ -408,7 +400,7 @@
       // 获取指定日期最低价格
       if (date) return this.getPlanDateData(year, month, date)[0];
       // 获取指定月最低价格
-      if (this.$data.length === 0) return '无团期';
+      if (this.$data.length === 0) return this.$options.minPriceText;
       // 根据年月日过滤数据
       const filterData = this.$data.filter(curVal => {
         return (
@@ -425,7 +417,7 @@
             .sort((min, max) => {
               return min - max;
             })[0]
-        : '无团期';
+        : this.$options.minPriceText;
     }
     getStart(type) {
       const time = new Date();
@@ -501,6 +493,7 @@
     }
   }
   function getTargetNode(node, parent, selector) {
+    if (node.parentNode.nodeName === 'BODY') return null;
     if (node.parentNode === parent) {
       if (
         node.nodeName.toLowerCase() === selector ||

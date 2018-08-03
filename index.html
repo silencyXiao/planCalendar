@@ -220,15 +220,16 @@
 
 <body>
   <div class="m-calendar" id="planCalendar"></div>
+  <!-- <script src="dist/planCalendar.min.js"></script> -->
   <!-- <script src="src/planCalendar.es6.js"></script> -->
-  <script src="dist/planCalendar.min.js"></script>
+  <script src="http://cdn.op110.com.cn/lib/js/planCalendar.min.js"></script>
   <script>
     console.time('执行时间');
     var now = new Date();
     var resData = {
       fromCity: '深圳',
       rows: [{
-        planDate: '2018-10-28',
+        planDate: '2018-07-28',
         days: 2,
         adultPrice: 3299,
         childPrice: 3099,
@@ -237,7 +238,7 @@
         sale: true,
         badge: '优惠'
       }, {
-        planDate: '2018-10-25',
+        planDate: '2018-06-25',
         days: 30,
         adultPrice: 2222,
         childPrice: 2222,
@@ -261,7 +262,7 @@
         sale: true,
         badge: '优惠'
       }, {
-        planDate: '2018-08-31',
+        planDate: '2018-09-31',
         days: 7,
         adultPrice: 80,
         childPrice: 3299,
@@ -283,7 +284,7 @@
         otherPrice: 300,
         endNum: 22
       }, {
-        planDate: now.setDate(31),
+        planDate: now.setDate(32),
         days: 6,
         adultPrice: 3599,
         childPrice: 3399,
@@ -348,20 +349,21 @@
       };
       mark_dates.push(obj);
     });
-
     var planCalendar = new PlanCalendar('#planCalendar', {
       markDates: mark_dates,     // Array  默认值 []， 格式化好的团期数据
       //disableDates: ['2018-06-09'], // 禁选团期，只禁用含团的日期，Array 指定日期 | Object 时间范围，start/end，
       disableDates: {
-        start: '2018-06-09',
-        end: '2018-07-09',
+        start: '2018-08-01',
+        end: '2018-08-09',
       },
-      monthNum: 5,               // Number 默认值 4，月份显示个数
+      monthNum: 4,               // Number 默认值 4，月份显示个数
       sellOutText: '暂满',       // String 默认值 '售罄'，余位为0时显示文字
-      startByData: false,        // Boolean 默认值 false，是否显示提示层 
+      minPriceText: 'T_T木有', // String, 默认值 无团期， 当月最小价格为0 时显示文字
+      startByData: true,        // Boolean 默认值 false，是否显示提示层 
+      showExpiredData: true,    // Boolean 默认值 false，是否渲染今天以前的数据; 当showExpiredData值为true时，startByData 设置true将失效
       maxNum: 20,               // Number  默认值 20，大于等于指定余位显示 maxNumText 的值
       maxNumText: '充足',       // String  默认值 '充足'，配置大于等于指定余位显示文字
-      defineNumText: '',
+      defineNumText: '',       // String 默认值： '', 自定义数量显示，若设置，权重最高，maxNumText 会失效
       onSelect: function (data) { // 选择团期之后的回调, data[Array]: 团期数据
         console.log(data);
       },
