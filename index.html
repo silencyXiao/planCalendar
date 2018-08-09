@@ -220,9 +220,9 @@
 
 <body>
   <div class="m-calendar" id="planCalendar"></div>
-  <!-- <script src="dist/planCalendar.min.js"></script> -->
+  <script src="dist/planCalendar.min.js"></script>
   <!-- <script src="src/planCalendar.es6.js"></script> -->
-  <script src="http://cdn.op110.com.cn/lib/js/planCalendar.min.js"></script>
+  <!-- <script src="http://cdn.op110.com.cn/lib/js/planCalendar.min.js"></script> -->
   <script>
     console.time('执行时间');
     var now = new Date();
@@ -372,6 +372,9 @@
       },
       onMouseLeave: function () { // 鼠标移出含团日期回调， ps：必须为当月，上月或下月将不触发
         console.log('鼠标移出');
+      },
+      onMonthChange: function (data) { // 更改当前月所触发的回调， data[Array]: 当月团期数据，
+        console.log('更改月的当月数据：', data);
       }
     });
     console.timeEnd('执行时间');

@@ -29,6 +29,9 @@
         },
         onMouseLeave: function() {
           // 鼠标离开当月日期项之后的回调
+        },
+        onMonthChange: function(data) {
+          // 切换月之后的回调，data[Array]： 当月所有的团期数据
         }
       };
 
@@ -92,6 +95,9 @@
         this.getCalDateHtml(year, month)
       );
 
+      // 初始化获取当月数据
+      options.onMonthChange(this.getMonthData(year, month));
+
       // 切换月
       this.on('click', $month, 'li', (parent, targetNode) => {
         parent.childNodes.forEach(curVal => removeClass(curVal, 'active'));
@@ -105,6 +111,7 @@
         year = +targetNode.getAttribute('data-year');
         month = +targetNode.getAttribute('data-month') - 1;
         $date.innerHTML = this.getCalDateHtml(year, month);
+        options.onMonthChange(this.getMonthData(year, month));
       });
 
       // 选择含团日期
@@ -159,6 +166,7 @@
         } else {
           $month.childNodes[monthActiveIndex].previousSibling.click();
         }
+        options.onMonthChange(this.getMonthData(year, month));
       });
       // 切换至下月
       $next.addEventListener('click', () => {
@@ -175,6 +183,7 @@
         } else {
           $month.childNodes[monthActiveIndex].nextSibling.click();
         }
+        options.onMonthChange(this.getMonthData(year, month));
       });
     }
     // 事件委托
@@ -249,6 +258,40 @@
           return min.price - max.price;
         });
     }
+    getCalDateData(year, month) {
+      const febDays =
+        (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 29 : 28; // 平年和闰年二月份天数
+      const monthDays = [31, febDays, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+      const startDateIndex = new Date(year, month, 1).getDay();
+      const endDateIndex = startDateIndex + (monthDays[month] - 1);
+      const getCurDate = ((num = 0) => () => ++num)(); // 累加计数器
+      const calDateData = [];
+      for (let i = 0; i < 42; i++) {
+        if (i < startDateIndex) {
+          // 获取上月数据
+          // 处理跨年, 月变11，年减1
+          let prevMonth = month === 0 ? 11 : month - 1;
+          let prevYear = month === 0 ? year - 1 : year;
+          let d = monthDays[prevMonth] - (startDateIndex - 1 - i);
+          let curDate = format(new Date(prevYear, prevMonth, d));
+          calDateData.push({ date: curDate, status: 'prev' });
+        } else if (i >= startDateIndex && i <= endDateIndex) {
+          // 获取当月数据
+          let d = i - startDateIndex + 1;
+          let curDate = format(new Date(year, month, d));
+          calDateData.push({ date: curDate, status: 'current' });
+        } else {
+          // 获取下月数据
+          // 处理跨年，月变0，年加1
+          let nextMonth = month === 11 ? 0 : month + 1;
+          let nextYear = month === 11 ? year + 1 : year;
+          let curDate = format(new Date(nextYear, nextMonth, getCurDate()));
+          calDateData.push({ date: curDate, status: 'next' });
+        }
+      }
+
+      return calDateData;
+    }
     getCalDateHtml(year, month) {
       let t = new Date();
       let html = '';
@@ -290,40 +333,6 @@
       }
       return `<li class="${invalidClass} ${todayClass}" data-date="${dateString}" data-week="${week}"><p class="date">${dateText}</p></li>`;
     }
-    getCalDateData(year, month) {
-      const febDays =
-        (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 29 : 28; // 平年和闰年二月份天数
-      const monthDays = [31, febDays, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-      const startDateIndex = new Date(year, month, 1).getDay();
-      const endDateIndex = startDateIndex + (monthDays[month] - 1);
-      const getCurDate = ((num = 0) => () => ++num)(); // 累加计数器
-      const calDateData = [];
-      for (let i = 0; i < 42; i++) {
-        if (i < startDateIndex) {
-          // 获取上月数据
-          // 处理跨年, 月变11，年减1
-          let prevMonth = month === 0 ? 11 : month - 1;
-          let prevYear = month === 0 ? year - 1 : year;
-          let d = monthDays[prevMonth] - (startDateIndex - 1 - i);
-          let curDate = format(new Date(prevYear, prevMonth, d));
-          calDateData.push({ date: curDate, status: 'prev' });
-        } else if (i >= startDateIndex && i <= endDateIndex) {
-          // 获取当月数据
-          let d = i - startDateIndex + 1;
-          let curDate = format(new Date(year, month, d));
-          calDateData.push({ date: curDate, status: 'current' });
-        } else {
-          // 获取下月数据
-          // 处理跨年，月变0，年加1
-          let nextMonth = month === 11 ? 0 : month + 1;
-          let nextYear = month === 11 ? year + 1 : year;
-          let curDate = format(new Date(nextYear, nextMonth, getCurDate()));
-          calDateData.push({ date: curDate, status: 'next' });
-        }
-      }
-
-      return calDateData;
-    }
     getCalMonthHtml(year, month, index) {
       let html = '';
       let yy = year;
@@ -359,6 +368,20 @@
         html += `<li>${weekCn[i]}</li>`;
       }
       return html;
+    }
+    getMonthData(year, month) {
+      // 获取指定月最低价格
+      if (this.$data.length === 0) return this.$data;
+      // 根据年月日过滤数据
+      const filterData = this.$data.filter(curVal => {
+        return (
+          +curVal.date.split('/')[0] === year &&
+          +curVal.date.split('/')[1] === month + 1
+        );
+      });
+      return filterData.sort((min, max) => {
+        return new Date(min.date).getTime() - new Date(max.date).getTime();
+      });
     }
     toNumText(num) {
       const options = this.$options;
