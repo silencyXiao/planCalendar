@@ -215,13 +215,69 @@
       font-style: normal;
       overflow: hidden;
     }
+
+    /* 添加 */
+
+    .m-calendar .calendar-header {
+      height: 40px;
+      text-align: center;
+      background-color: #fff;
+    }
+
+    .m-calendar .calendar-header .calendar-header-year {
+      float: left;
+      width: 50%;
+      height: 40px;
+      line-height: 40px;
+    }
+
+    .m-calendar .calendar-header .calendar-header-month {
+      float: right;
+      width: 50%;
+      height: 40px;
+      line-height: 40px;
+    }
+
+    .m-calendar .calendar-header .btn-prev {
+      float: left;
+    }
+
+    .m-calendar .calendar-header .btn-next {
+      float: right;
+    }
+
+    .m-calendar .calendar-header .calendar-header-year .btn-prev,
+    .m-calendar .calendar-header .calendar-header-year .btn-next,
+    .m-calendar .calendar-header .calendar-header-month .btn-prev,
+    .m-calendar .calendar-header .calendar-header-month .btn-next {
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      font-size: 16px;
+      color: #999;
+      cursor: pointer;
+      font-family: 'Simsun';
+    }
   </style>
 </head>
 
 <body>
-  <div class="m-calendar" id="planCalendar"></div>
-  <script src="dist/planCalendar.min.js"></script>
-  <!-- <script src="src/planCalendar.es6.js"></script> -->
+  <div class="m-calendar" id="planCalendar">
+    <!-- <div class="calendar-header">
+      <div class="calendar-header-year">
+        <span class="btn-prev">&lt;</span>
+        <span>2020年</span>
+        <span class="btn-next">&gt;</span>
+      </div>
+      <div class="calendar-header-month">
+        <span class="btn-prev">&lt;</span>
+        <span>8月</span>
+        <span class="btn-next">&gt;</span>
+      </div>
+    </div> -->
+  </div>
+  <!-- <script src="dist/planCalendar.min.js"></script> -->
+  <script src="src/planCalendar.es6.js"></script>
   <!-- <script src="http://cdn.op110.com.cn/lib/js/planCalendar.min.js"></script> -->
   <script>
     console.time('执行时间');
@@ -229,7 +285,7 @@
     var resData = {
       fromCity: '深圳',
       rows: [{
-        planDate: '2018-07-28',
+        planDate: '2020-07-28',
         days: 2,
         adultPrice: 3299,
         childPrice: 3099,
@@ -373,8 +429,11 @@
       onMouseLeave: function () { // 鼠标移出含团日期回调， ps：必须为当月，上月或下月将不触发
         console.log('鼠标移出');
       },
-      onMonthChange: function (data) { // 更改当前月所触发的回调， data[Array]: 当月团期数据，
-        console.log('更改月的当月数据：', data);
+      onYearChange: function (year, month) { // 切换年的的回调，参数 year，month
+        console.log('切换年：', year, month);
+      },
+      onMonthChange: function (year, month) { // 切换月的的回调，参数 year，month
+        console.log('切换月：', year, month);
       }
     });
     console.timeEnd('执行时间');

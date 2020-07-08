@@ -30,8 +30,6 @@
         onMouseLeave: function () {
           // 鼠标离开当月日期项之后的回调
         },
-        onYearChange: function () {
-        },
         onMonthChange: function (data) {
           // 切换月之后的回调，data[Array]： 当月所有的团期数据
         }
@@ -83,10 +81,12 @@
         : new Date().getMonth();
       let monthActiveIndex = 0;
 
-      const $header = this.createElem(
-        'div',
-        'calendar-header',
-        this.getCalHeaderHtml(year, month)
+      const $prev = this.createElem('span', 'calendar-btn-prev', '&lt;');
+      const $next = this.createElem('span', 'calendar-btn-next', '&gt;');
+      const $month = this.createElem(
+        'ul',
+        'calendar-month',
+        this.getCalMonthHtml(year, month, monthActiveIndex)
       );
       this.createElem('ul', 'calendar-week', this.getCalWeek());
       const $date = this.createElem(
@@ -95,41 +95,24 @@
         this.getCalDateHtml(year, month)
       );
 
-      const $year = $header.querySelector('.calendar-header-year')
-      const $month = $header.querySelector('.calendar-header-month')
+      // 初始化获取当月数据
+      options.onMonthChange(this.getMonthData(year, month));
 
-      this.on('click', $year, '.btn-prev', (parent, targetNode) => {
-        year = parseInt($year.querySelector('.text').textContent);
-        $year.querySelector('.text').textContent = `${--year}年`
+      // 切换月
+      this.on('click', $month, 'li', (parent, targetNode) => {
+        parent.childNodes.forEach(curVal => removeClass(curVal, 'active'));
+        addClass(targetNode, 'active');
+        for (let i = 0; i < parent.childNodes.length; i++) {
+          if (parent.childNodes[i] === targetNode) {
+            monthActiveIndex = i;
+            break;
+          }
+        }
+        year = +targetNode.getAttribute('data-year');
+        month = +targetNode.getAttribute('data-month') - 1;
         $date.innerHTML = this.getCalDateHtml(year, month);
-        options.onYearChange(year, month);
-      })
-      this.on('click', $year, '.btn-next', (parent, targetNode) => {
-        year = parseInt($year.querySelector('.text').textContent);
-        $year.querySelector('.text').textContent = `${++year}年`
-        $date.innerHTML = this.getCalDateHtml(year, month);
-        options.onYearChange(year, month);
-      })
-      this.on('click', $month, '.btn-prev', (parent, targetNode) => {
-        year = parseInt($year.querySelector('.text').textContent);
-        month = parseInt($month.querySelector('.text').textContent) - 1;
-        year = month === 0 ? --year : year;
-        month = month === 0 ? 11 : --month;
-        $year.querySelector('.text').textContent = `${year}年`
-        $month.querySelector('.text').textContent = `${month + 1}月`
-        $date.innerHTML = this.getCalDateHtml(year, month);
-        options.onMonthChange(year, month);
-      })
-      this.on('click', $month, '.btn-next', (parent, targetNode) => {
-        year = parseInt($year.querySelector('.text').textContent);
-        month = parseInt($month.querySelector('.text').textContent) - 1;
-        year = month === 11 ? ++year : year;
-        month = month === 11 ? 0 : ++month;
-        $year.querySelector('.text').textContent = `${year}年`
-        $month.querySelector('.text').textContent = `${month + 1}月`
-        $date.innerHTML = this.getCalDateHtml(year, month);
-        options.onMonthChange(year, month);
-      })
+        options.onMonthChange(this.getMonthData(year, month));
+      });
 
       // 选择含团日期
       this.on('click', $date, '.enabled', (parent, targetNode) => {
@@ -139,10 +122,10 @@
         this.$seletedDate = targetNode.getAttribute('data-date');
         options.onSelect(this.getPlanDateData(this.$seletedDate));
         if (targetNode.className.includes('prev')) {
-          $month.querySelector('.btn-prev').click();
+          $prev.click();
         }
         if (targetNode.className.includes('next')) {
-          $month.querySelector('.btn-next').click();
+          $next.click();
         }
       });
       // 鼠标移入含团日期
@@ -167,6 +150,40 @@
         ) {
           options.onMouseLeave();
         }
+      });
+      // 切换至上月
+      $prev.addEventListener('click', () => {
+        year = month === 0 ? --year : year;
+        month = month === 0 ? 11 : --month;
+        if (monthActiveIndex === 0) {
+          monthActiveIndex = 0;
+          $month.innerHTML = this.getCalMonthHtml(
+            year,
+            month,
+            monthActiveIndex
+          );
+          $date.innerHTML = this.getCalDateHtml(year, month);
+        } else {
+          $month.childNodes[monthActiveIndex].previousSibling.click();
+        }
+        options.onMonthChange(this.getMonthData(year, month));
+      });
+      // 切换至下月
+      $next.addEventListener('click', () => {
+        year = month === 11 ? ++year : year;
+        month = month === 11 ? 0 : ++month;
+        if (monthActiveIndex === options.monthNum - 1) {
+          monthActiveIndex = 0;
+          $month.innerHTML = this.getCalMonthHtml(
+            year,
+            month,
+            monthActiveIndex
+          );
+          $date.innerHTML = this.getCalDateHtml(year, month);
+        } else {
+          $month.childNodes[monthActiveIndex].nextSibling.click();
+        }
+        options.onMonthChange(this.getMonthData(year, month));
       });
     }
     // 事件委托
@@ -316,17 +333,32 @@
       }
       return `<li class="${invalidClass} ${todayClass}" data-date="${dateString}" data-week="${week}"><p class="date">${dateText}</p></li>`;
     }
-    getCalHeaderHtml(year, month) {
-      return `<div class="calendar-header-year">
-                <span class="btn-prev">&lt;</span>
-                <span class="text">${year}年</span>
-                <span class="btn-next">&gt;</span>
-              </div>
-              <div class="calendar-header-month">
-                <span class="btn-prev">&lt;</span>
-                <span class="text">${month + 1}月</span>
-                <span class="btn-next">&gt;</span>
-              </div>`
+    getCalMonthHtml(year, month, index) {
+      let html = '';
+      let yy = year;
+      let mm = month;
+      for (let i = 0; i < this.$options.monthNum; i++) {
+        mm = month + i;
+        if (month + i > 11) {
+          yy = year + 1;
+          mm = month + i - 12;
+        }
+
+        let minPrice = this.getMinPrice(yy, mm);
+        let minPriceTxt =
+          minPrice === this.$options.minPriceText
+            ? minPrice
+            : `&yen;${minPrice}起`;
+
+        html += `<li data-year="${yy}" data-month="${mm + 1}" class="item 
+          ${i === index ? 'active' : ''}">
+          <p class="month">${yy}年${mm + 1}月</p>
+          <p class="${
+          minPrice === this.$options.minPriceText ? 'none' : 'price'
+          }">${minPriceTxt}</p>
+        </li>`;
+      }
+      return html;
     }
     getCalWeek() {
       const weekCn = ['日', '一', '二', '三', '四', '五', '六'];
@@ -336,6 +368,20 @@
         html += `<li>${weekCn[i]}</li>`;
       }
       return html;
+    }
+    getMonthData(year, month) {
+      // 获取指定月最低价格
+      if (this.$data.length === 0) return this.$data;
+      // 根据年月日过滤数据
+      const filterData = this.$data.filter(curVal => {
+        return (
+          +curVal.date.split('/')[0] === year &&
+          +curVal.date.split('/')[1] === month + 1
+        );
+      });
+      return filterData.sort((min, max) => {
+        return new Date(min.date).getTime() - new Date(max.date).getTime();
+      });
     }
     toNumText(num) {
       const options = this.$options;
